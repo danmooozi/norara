@@ -1,7 +1,5 @@
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'norara-secret-key-2025';
 
-// JWT 검증 미들웨어
 function requireAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -9,7 +7,7 @@ function requireAuth(req, res, next) {
   }
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
@@ -17,7 +15,6 @@ function requireAuth(req, res, next) {
   }
 }
 
-// 관리자 전용 미들웨어 (requireAuth 이후 사용)
 function requireAdmin(req, res, next) {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ error: '관리자 권한이 필요합니다.' });

@@ -14,11 +14,11 @@ function GameCard({ game, onPreview }) {
         />
       </div>
       <div className="game-card-body">
-        <span className={`game-card-category game-card-category--${(game.category || 'Arcade').toLowerCase()}`}>
+        <span className="game-card-category">
           {({
-            Arcade:'🕹️', Puzzle:'🧩', Strategy:'♟️', Action:'⚔️',
-            RPG:'🗡️', Sports:'⚽', Party:'🎲', Music:'🎵', Tool:'🛠️', Other:'📦'
-          })[game.category] || '🎮'} {game.category || 'Arcade'}
+            '액션': '⚔️', '퍼즐': '🧩', 'RPG': '🗡️',
+            '스포츠': '⚽', '파티': '🎲', '기타': '📦'
+          })[game.category] || '🎮'} {game.category || '기타'}
         </span>
         <div className="game-card-title">{game.title}</div>
         <p className="game-card-desc">{game.description || 'No description available.'}</p>

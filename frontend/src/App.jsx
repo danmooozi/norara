@@ -68,7 +68,7 @@ function AppInner() {
         {currentView === 'admin' && !isAdmin && <GameGallery />}
       </main>
       <footer className="nora-footer">
-        norara &copy; 2025 &nbsp;|&nbsp; 점심 먹고 노라라~
+        norara &copy; 2026 &nbsp;|&nbsp; 퇴근하고 노라라~
       </footer>
     </div>
   );
