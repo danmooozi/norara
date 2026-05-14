@@ -1,4 +1,75 @@
 /* norara (노라라) — 레트로 픽셀 테마 */
+
+/* ── Cursor Pet ── */
+.cursor-pet {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  transition: transform 0.15s ease;
+}
+
+.cursor-pet-duck {
+  width: 4px;
+  height: 4px;
+  background: transparent;
+  image-rendering: pixelated;
+  box-shadow:
+    /* 부리 */
+    12px 4px 0 0 #ff8800,
+    /* 머리 */
+    8px 8px 0 0 #f5d600,
+    12px 8px 0 0 #f5d600,
+    16px 8px 0 0 #f5d600,
+    /* 머리 + 눈 */
+    8px 12px 0 0 #f5d600,
+    12px 12px 0 0 #111,
+    16px 12px 0 0 #f5d600,
+    20px 12px 0 0 #f5d600,
+    /* 몸통 1 */
+    4px 16px 0 0 #f5d600,
+    8px 16px 0 0 #f5d600,
+    12px 16px 0 0 #f5d600,
+    16px 16px 0 0 #f5d600,
+    20px 16px 0 0 #f5d600,
+    24px 16px 0 0 #f5d600,
+    /* 몸통 2 (날개 하이라이트) */
+    4px 20px 0 0 #f5d600,
+    8px 20px 0 0 #ffe57a,
+    12px 20px 0 0 #f5d600,
+    16px 20px 0 0 #f5d600,
+    20px 20px 0 0 #ffe57a,
+    24px 20px 0 0 #f5d600,
+    /* 몸통 3 */
+    4px 24px 0 0 #f5d600,
+    8px 24px 0 0 #f5d600,
+    12px 24px 0 0 #f5d600,
+    16px 24px 0 0 #f5d600,
+    20px 24px 0 0 #f5d600,
+    24px 24px 0 0 #f5d600,
+    /* 발 */
+    8px 28px 0 0 #ff8800,
+    20px 28px 0 0 #ff8800;
+}
+
+.cursor-pet--idle .cursor-pet-duck {
+  animation: duck-float 1.8s ease-in-out infinite;
+}
+
+.cursor-pet--moving .cursor-pet-duck {
+  animation: duck-waddle 0.25s steps(2) infinite;
+}
+
+@keyframes duck-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-5px); }
+}
+
+@keyframes duck-waddle {
+  0%   { transform: translateY(0px) rotate(-8deg); }
+  50%  { transform: translateY(-3px) rotate(8deg); }
+  100% { transform: translateY(0px) rotate(-8deg); }
+}
+
 :root {
   --nora-bg:      #0e0c1a;
   --nora-surface: #1a1630;

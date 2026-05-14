@@ -4,6 +4,7 @@ import Header from './components/Header.jsx';
 import GameGallery from './components/GameGallery.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
 import AdminLoginPage from './components/AdminLoginPage.jsx';
+import CursorPet from './components/CursorPet.jsx';
 
 const SECRET_PATH = 'secret-admin';
 
@@ -54,6 +55,7 @@ function AppInner() {
 
   return (
     <div className="app">
+      <CursorPet />
       <Header
         currentView={currentView}
         onNavigate={handleNavigate}
