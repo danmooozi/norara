@@ -1655,6 +1655,277 @@ body::after {
   color: var(--nora-muted); letter-spacing: .08em; opacity: .45;
 }
 
+.nora-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.nora-footer-btn {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.6rem;
+  color: var(--nora-muted);
+  text-decoration: none;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  letter-spacing: 0;
+  transition: color 0.2s, border-color 0.2s;
+  opacity: 0.6;
+  white-space: nowrap;
+  background: none;
+  cursor: pointer;
+}
+
+.nora-footer-btn:hover {
+  color: var(--nora-cyan);
+  border-color: rgba(61,255,216,.25);
+  opacity: 1;
+}
+
+.nora-footer-divider {
+  color: var(--nora-muted);
+  font-size: 0.6rem;
+  opacity: 0.5;
+}
+
+/* ── Site Request Modal ── */
+.site-req-modal {
+  box-shadow: 8px 8px 0 var(--nora-purple), 0 24px 60px rgba(0,0,0,.75);
+}
+
+.site-req-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0 8px;
+  text-align: center;
+}
+
+.site-req-done-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  animation: starBlink 1.4s step-end infinite;
+}
+
+.site-req-done-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .85rem;
+  color: var(--nora-green);
+  text-shadow: 2px 2px 0 rgba(68,255,136,.3);
+  margin-bottom: 14px;
+  letter-spacing: .06em;
+}
+
+.site-req-done-msg {
+  font-size: .88rem;
+  color: var(--nora-muted);
+  line-height: 1.8;
+}
+
+/* ── Site Request Admin List ── */
+.sr-filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.sr-filter-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .48rem;
+  padding: 6px 12px;
+  background: var(--nora-surf2);
+  border: 2px solid var(--nora-border);
+  color: var(--nora-muted);
+  cursor: pointer;
+  letter-spacing: .04em;
+  transition: all .1s;
+}
+
+.sr-filter-btn.active,
+.sr-filter-btn:hover {
+  border-color: var(--nora-purple);
+  color: var(--nora-purple);
+  background: rgba(176,111,255,.08);
+}
+
+.sr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sr-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--nora-surf2);
+  border: 2px solid var(--nora-border);
+  border-radius: 2px;
+  transition: border-color .15s;
+}
+
+.sr-item:hover {
+  border-color: var(--nora-purple);
+}
+
+.sr-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sr-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sr-site-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .6rem;
+  color: var(--nora-text);
+  letter-spacing: .04em;
+}
+
+.sr-status-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .42rem;
+  padding: 2px 7px;
+  border: 1px solid;
+  letter-spacing: .04em;
+}
+
+.sr-site-url {
+  font-size: .78rem;
+  color: var(--nora-cyan);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.sr-site-url:hover {
+  text-decoration: underline;
+}
+
+.sr-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sr-requester {
+  font-size: .75rem;
+  color: var(--nora-muted);
+}
+
+.sr-date {
+  font-size: .72rem;
+  color: var(--nora-muted);
+}
+
+.sr-description {
+  font-size: .8rem;
+  color: var(--nora-muted);
+  line-height: 1.6;
+  margin-top: 2px;
+}
+
+.sr-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.sr-btn-approve {
+  background: rgba(68,255,136,.1);
+  border: 2px solid var(--nora-green) !important;
+  color: var(--nora-green) !important;
+}
+
+.sr-btn-approve:hover {
+  background: rgba(68,255,136,.2) !important;
+}
+
+.sr-btn-reject {
+  background: rgba(255,68,85,.1);
+  border: 2px solid var(--nora-red) !important;
+  color: var(--nora-red) !important;
+}
+
+.sr-btn-reject:hover {
+  background: rgba(255,68,85,.2) !important;
+}
+
+.sr-btn-register {
+  background: rgba(68,255,136,.12);
+  border: 2px solid var(--nora-green) !important;
+  color: var(--nora-green) !important;
+  font-family: 'Press Start 2P', monospace;
+  font-size: .42rem !important;
+  letter-spacing: .03em;
+}
+
+.sr-btn-register:hover {
+  background: rgba(68,255,136,.25) !important;
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 rgba(68,255,136,.3);
+}
+
+/* ── Site Register Modal ── */
+.site-register-modal {
+  box-shadow: 8px 8px 0 var(--nora-green), 0 24px 60px rgba(0,0,0,.75);
+  max-width: 600px;
+}
+
+.sr-reg-origin {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: rgba(68,255,136,.06);
+  border: 1px solid rgba(68,255,136,.2);
+  border-radius: 2px;
+  margin-bottom: 4px;
+}
+
+.sr-reg-origin-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .42rem;
+  color: var(--nora-green);
+  letter-spacing: .06em;
+  margin-bottom: 2px;
+}
+
+.sr-reg-origin-name {
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--nora-text);
+}
+
+.sr-reg-origin-url {
+  font-size: .75rem;
+  color: var(--nora-cyan);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.sr-reg-origin-url:hover { text-decoration: underline; }
+
+.sr-reg-origin-requester {
+  font-size: .72rem;
+  color: var(--nora-muted);
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .admin-panel { grid-template-columns: 1fr; }

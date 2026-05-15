@@ -6,9 +6,12 @@ const rateLimit = require('express-rate-limit');
 const pool = require('./db');
 const gamesRouter = require('./routes/games');
 const authRouter = require('./routes/auth');
+const siteRequestsRouter = require('./routes/siteRequests');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(cors({
@@ -28,6 +31,7 @@ const loginLimiter = rateLimit({
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRouter);
 app.use('/api/games', gamesRouter);
+app.use('/api/site-requests', siteRequestsRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });

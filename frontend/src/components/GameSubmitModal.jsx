@@ -82,8 +82,8 @@ function GameSubmitModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="submit-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="submit-modal">
         <button className="modal-close-btn" onClick={onClose}>✕</button>
 
         <div className="submit-modal-header">

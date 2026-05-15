@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import UserManager from './UserManager';
+import SiteRegisterModal from './SiteRegisterModal';
 
 const CATEGORIES = ['액션', '퍼즐', 'RPG', '스포츠', '파티', '기타'];
 
@@ -25,6 +26,9 @@ function validate(form) {
   return errors;
 }
 
+const STATUS_LABEL = { pending: '대기중', approved: '승인', rejected: '거절' };
+const STATUS_COLOR = { pending: 'var(--nora-yellow)', approved: 'var(--nora-green)', rejected: 'var(--nora-red)' };
+
 function AdminPanel() {
   const { token, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('games');
@@ -41,6 +45,12 @@ function AdminPanel() {
   const [thumbPreviewError, setThumbPreviewError] = useState(false);
   const formRef = useRef(null);
 
+  // 사이트 신청 관련 상태
+  const [siteRequests, setSiteRequests] = useState([]);
+  const [srLoading, setSrLoading] = useState(false);
+  const [srFilter, setSrFilter] = useState('all');
+  const [registerTarget, setRegisterTarget] = useState(null); // 바로 등록 모달 대상
+
   const fetchGames = async () => {
     try {
       setLoading(true);
@@ -56,6 +66,61 @@ function AdminPanel() {
   };
 
   useEffect(() => { fetchGames(); }, []);
+
+  const fetchSiteRequests = async () => {
+    setSrLoading(true);
+    try {
+      const res = await fetch(`/api/site-requests?status=${srFilter}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('신청 목록을 불러오지 못했습니다.');
+      setSiteRequests(await res.json());
+    } catch (err) {
+      showToast(`❌ ${err.message}`, 'error');
+    } finally {
+      setSrLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'requests') fetchSiteRequests();
+  }, [activeTab, srFilter]);
+
+  const handleSrStatus = async (id, status) => {
+    try {
+      const res = await fetch(`/api/site-requests/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) throw new Error('상태 변경에 실패했습니다.');
+      showToast(status === 'approved' ? '✅ 승인되었습니다.' : '🚫 거절되었습니다.');
+      fetchSiteRequests();
+    } catch (err) {
+      showToast(`❌ ${err.message}`, 'error');
+    }
+  };
+
+  const handleRegisterSuccess = (newGame) => {
+    setRegisterTarget(null);
+    showToast(`🚀 "${newGame.title}" 이(가) 갤러리에 등록되었습니다!`);
+    fetchSiteRequests();
+    fetchGames();
+  };
+
+  const handleSrDelete = async (id) => {
+    try {
+      const res = await fetch(`/api/site-requests/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('삭제에 실패했습니다.');
+      showToast('🗑️ 신청이 삭제되었습니다.');
+      fetchSiteRequests();
+    } catch (err) {
+      showToast(`❌ ${err.message}`, 'error');
+    }
+  };
 
   const showToast = (text, type = 'success') => {
     setToast({ text, type });
@@ -156,6 +221,14 @@ function AdminPanel() {
 
   return (
     <div className="admin-wrapper">
+      {registerTarget && (
+        <SiteRegisterModal
+          request={registerTarget}
+          token={token}
+          onClose={() => setRegisterTarget(null)}
+          onSuccess={handleRegisterSuccess}
+        />
+      )}
       {toast && (
         <div className={`admin-toast admin-toast--${toast.type}`}>{toast.text}</div>
       )}
@@ -163,17 +236,26 @@ function AdminPanel() {
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">
-            {activeTab === 'games' ? '🎮 게임 관리' : '👥 유저 관리'}
+            {activeTab === 'games' ? '🎮 게임 관리'
+              : activeTab === 'requests' ? '📬 사이트 추가 신청'
+              : '👥 유저 관리'}
           </h1>
           <p className="admin-page-sub">
             {activeTab === 'games'
               ? '새 게임을 추가하거나 기존 게임 정보를 수정·삭제할 수 있습니다.'
+              : activeTab === 'requests'
+              ? '유저들이 신청한 사이트 추가 요청을 검토하고 승인·거절할 수 있습니다.'
               : '가입된 유저 목록을 확인하고 권한을 관리할 수 있습니다.'}
           </p>
         </div>
         <div className="admin-stats">
           {activeTab === 'games' && (
             <span className="admin-stat-badge">총 {games.length}개 게임</span>
+          )}
+          {activeTab === 'requests' && (
+            <span className="admin-stat-badge">
+              대기 {siteRequests.filter(r => r.status === 'pending').length}건
+            </span>
           )}
         </div>
       </div>
@@ -187,6 +269,14 @@ function AdminPanel() {
         </button>
         {isAdmin && (
           <button
+            className={`admin-tab-btn${activeTab === 'requests' ? ' active' : ''}`}
+            onClick={() => setActiveTab('requests')}
+          >
+            📬 사이트 신청
+          </button>
+        )}
+        {isAdmin && (
+          <button
             className={`admin-tab-btn${activeTab === 'users' ? ' active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
@@ -195,13 +285,103 @@ function AdminPanel() {
         )}
       </div>
 
-      {activeTab === 'users' && isAdmin
-        ? (
-          <div className="admin-panel admin-panel--full">
-            <UserManager showToast={showToast} />
+      {activeTab === 'users' && isAdmin ? (
+        <div className="admin-panel admin-panel--full">
+          <UserManager showToast={showToast} />
+        </div>
+      ) : activeTab === 'requests' && isAdmin ? (
+        <div className="admin-panel admin-panel--full">
+          {/* 필터 */}
+          <div className="sr-filter-bar">
+            {['all', 'pending', 'approved', 'rejected'].map((f) => (
+              <button
+                key={f}
+                className={`sr-filter-btn${srFilter === f ? ' active' : ''}`}
+                onClick={() => setSrFilter(f)}
+              >
+                {f === 'all' ? '전체' : STATUS_LABEL[f]}
+              </button>
+            ))}
           </div>
-        )
-        : (
+
+          {srLoading ? (
+            <div className="loading-state">⏳ 불러오는 중...</div>
+          ) : siteRequests.length === 0 ? (
+            <div className="empty-state">
+              <span>📭</span>
+              <p>신청 내역이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="sr-list">
+              {siteRequests.map((req) => (
+                <div key={req.id} className="sr-item">
+                  <div className="sr-item-main">
+                    <div className="sr-item-header">
+                      <span className="sr-site-name">{req.site_name}</span>
+                      <span
+                        className="sr-status-badge"
+                        style={{ color: STATUS_COLOR[req.status], borderColor: STATUS_COLOR[req.status] }}
+                      >
+                        {STATUS_LABEL[req.status]}
+                      </span>
+                    </div>
+                    <a
+                      className="sr-site-url"
+                      href={req.site_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      🔗 {req.site_url}
+                    </a>
+                    <div className="sr-item-meta">
+                      <span className="admin-category-badge">{req.category}</span>
+                      {req.requester && <span className="sr-requester">👤 {req.requester}</span>}
+                      <span className="sr-date">
+                        {new Date(req.created_at).toLocaleDateString('ko-KR')}
+                      </span>
+                    </div>
+                    {req.description && (
+                      <p className="sr-description">{req.description}</p>
+                    )}
+                  </div>
+                  <div className="sr-item-actions">
+                    <button
+                      className="btn btn-sm sr-btn-register"
+                      onClick={() => setRegisterTarget(req)}
+                      title="게임 갤러리에 바로 등록"
+                    >
+                      🚀 바로 등록
+                    </button>
+                    {req.status !== 'approved' && (
+                      <button
+                        className="btn btn-sm sr-btn-approve"
+                        onClick={() => handleSrStatus(req.id, 'approved')}
+                      >
+                        ✅ 승인
+                      </button>
+                    )}
+                    {req.status !== 'rejected' && (
+                      <button
+                        className="btn btn-sm sr-btn-reject"
+                        onClick={() => handleSrStatus(req.id, 'rejected')}
+                      >
+                        🚫 거절
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleSrDelete(req.id)}
+                      title="삭제"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
           <div className="admin-panel">
             <div ref={formRef}>
               <div className="admin-section-title">
