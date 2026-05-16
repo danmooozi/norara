@@ -5,6 +5,7 @@ function Header({ currentView, onNavigate, onAdminLogout, onPlayRandom }) {
 
   return (
     <header className="header">
+      <div className="header-inner">
       <div className="header-logo">
         <span className="header-logo-pixel">norara</span>
         <span className="header-logo-sub">퇴근 하고 노라라~</span>
@@ -33,6 +34,7 @@ function Header({ currentView, onNavigate, onAdminLogout, onPlayRandom }) {
           </>
         )}
       </nav>
+      </div>
     </header>
   );
 }

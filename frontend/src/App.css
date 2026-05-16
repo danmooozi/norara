@@ -130,15 +130,18 @@ body::after {
   background: var(--nora-surface);
   border-bottom: 4px solid var(--nora-yellow);
   box-shadow: 0 4px 0 rgba(255,225,86,.15), 0 6px 24px rgba(0,0,0,.5);
-  padding: 0 28px;
   padding-top: env(safe-area-inset-top);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: calc(68px + env(safe-area-inset-top));
   position: sticky;
   top: 0;
   z-index: 100;
+}
+
+.header-inner {
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
 }
 
 .header-logo {
@@ -2017,7 +2020,7 @@ body::after {
   .main-content { padding: 20px 14px 40px; }
 
   /* 헤더 */
-  .header { padding: 0 14px; padding-top: env(safe-area-inset-top); }
+  .header-inner { padding: 0 14px; }
   .header-logo-pixel { font-size: .95rem; }
   .header-logo-sub { display: none; }
   .nav-btn { padding: 10px 14px; }
