@@ -190,7 +190,7 @@ body::after {
   letter-spacing: .05em;
   transition: all .1s;
   box-shadow: 3px 3px 0 rgba(0,0,0,.5);
-  line-height: 1.2;
+  line-height: 1;
 }
 
 .nav-btn:hover {
@@ -388,6 +388,7 @@ body::after {
   color: #1a1000;
   font-family: 'Press Start 2P', monospace;
   font-size: .65rem;
+  line-height: 1;
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--nora-orange);
   transition: all .1s;
@@ -490,6 +491,7 @@ body::after {
   color: #fff;
   font-family: 'Press Start 2P', monospace;
   font-size: .65rem;
+  line-height: 1;
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--nora-pink);
   transition: all .1s;
@@ -671,6 +673,7 @@ body::after {
   margin-left: auto;
   font-family: 'Press Start 2P', monospace;
   font-size: .58rem;
+  line-height: 1;
   padding: 9px 16px;
   background: var(--nora-surf2);
   border: 3px solid var(--nora-cyan);
@@ -818,7 +821,8 @@ body::after {
   border: 3px solid var(--nora-border);
   color: var(--nora-muted);
   font-family: 'Press Start 2P', monospace;
-  font-size: .58rem;
+  font-size: .68rem;
+  line-height: 1;
   cursor: pointer;
   box-shadow: 3px 3px 0 rgba(0,0,0,.4);
   transition: all .1s;
@@ -837,7 +841,8 @@ body::after {
   border: 3px solid var(--nora-orange);
   color: #1a1000;
   font-family: 'Press Start 2P', monospace;
-  font-size: .58rem;
+  font-size: .68rem;
+  line-height: 1;
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--nora-orange);
   transition: all .1s;
@@ -997,8 +1002,10 @@ body::after {
   flex: 1;
   text-align: center;
   text-decoration: none;
-  display: inline-block;
-  line-height: 1.3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   letter-spacing: .03em;
   transition: transform .08s, box-shadow .08s;
   box-shadow: 3px 3px 0 rgba(0,0,0,.5);
@@ -2008,12 +2015,40 @@ body::after {
 
 @media (max-width: 620px) {
   .main-content { padding: 20px 14px 40px; }
-  .header { padding: 0 14px; }
+
+  /* 헤더 */
+  .header { padding: 0 14px; padding-top: env(safe-area-inset-top); }
   .header-logo-pixel { font-size: .95rem; }
+  .header-logo-sub { display: none; }
+  .nav-btn { padding: 10px 14px; }
+
+  /* 히어로: 패딩 축소로 게임 목록 빠르게 노출 */
+  .gallery-hero { padding: 20px 16px 16px; }
   .gallery-hero-title { font-size: 1.1rem; }
-  .gallery-hero-sub { font-size: .58rem; }
-  .game-grid { grid-template-columns: 1fr; }
+  .gallery-hero-sub { font-size: .58rem; margin-top: 8px; }
+  .gallery-hero-stars { margin-top: 10px; }
+
+  /* 검색바: 한 줄 유지, input 우선 (font-size 1rem = iOS 줌 방지) */
+  .search-input { min-width: 0; font-size: 1rem; padding: 7px 10px; }
+  .category-select { min-width: 100px; flex-shrink: 0; font-size: 1rem; padding: 7px 30px 7px 10px; }
+
+  /* 갤러리 헤더 */
+  .gallery-header { gap: 8px; }
+  .gallery-submit-btn { margin-left: 0; width: 100%; text-align: center; }
+
+  /* 게임 그리드: 2열 */
+  .game-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  /* 모달 */
   .modal-iframe { height: 320px; }
   .modal-footer { flex-direction: column; align-items: stretch; }
+  .submit-modal { padding: 24px 18px 20px; }
+
+  /* 관리자 */
   .admin-page-title { font-size: .78rem; }
+}
+
+@media (max-width: 380px) {
+  .game-grid { grid-template-columns: 1fr; }
+  .gallery-hero-title { font-size: .95rem; }
 }
