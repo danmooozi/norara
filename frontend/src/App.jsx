@@ -6,12 +6,14 @@ import AdminPanel from './components/AdminPanel.jsx';
 import AdminLoginPage from './components/AdminLoginPage.jsx';
 import CursorPet from './components/CursorPet.jsx';
 import SiteRequestModal from './components/SiteRequestModal.jsx';
+import ContactModal from './components/ContactModal.jsx';
 
 const SECRET_PATH = 'secret-admin';
 
 function AppInner() {
   const [currentView, setCurrentView] = useState('gallery');
   const [showSiteRequest, setShowSiteRequest] = useState(false);
+  const [showContact, setShowContact] = useState(false);
   const { isAdmin, loading, logout } = useAuth();
 
   // URL 해시 기반 라우팅 처리
@@ -60,6 +62,9 @@ function AppInner() {
       {showSiteRequest && (
         <SiteRequestModal onClose={() => setShowSiteRequest(false)} />
       )}
+      {showContact && (
+        <ContactModal onClose={() => setShowContact(false)} />
+      )}
       <CursorPet />
       <Header
         currentView={currentView}
@@ -77,13 +82,13 @@ function AppInner() {
       <footer className="nora-footer">
         norara &copy; 2026 &nbsp;|&nbsp; 퇴근하고 노라라~
         <div className="nora-footer-actions">
-          <a
+          <button
             className="nora-footer-btn"
-            href="mailto:dev@norara.kr"
+            onClick={() => setShowContact(true)}
             title="개발자에게 문의하기"
           >
             📨 개발자에게 문의
-          </a>
+          </button>
           <span className="nora-footer-divider">·</span>
           <button
             className="nora-footer-btn"
