@@ -633,32 +633,28 @@ body::after {
 
 .gallery-header p { color: var(--nora-muted); font-size: .8rem; }
 
-.gallery-header-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: auto;
-}
-
 .shuffle-btn {
-  padding: 5px 12px;
-  background: transparent;
-  border: 2px solid var(--nora-border);
+  font-family: 'Press Start 2P', monospace;
+  font-size: .5rem;
+  background: var(--nora-surf2);
+  border: 3px solid var(--nora-border);
   color: var(--nora-muted);
-  font-size: .75rem;
-  font-family: 'Noto Sans KR', sans-serif;
+  padding: 7px 12px;
   cursor: pointer;
-  transition: border-color .15s, color .15s, background .15s;
-  white-space: nowrap;
+  letter-spacing: .05em;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.5);
+  transition: all .1s;
+  line-height: 1.2;
 }
 .shuffle-btn:hover {
   border-color: var(--nora-purple);
   color: var(--nora-purple);
+  transform: translate(-1px,-1px);
+  box-shadow: 4px 4px 0 rgba(0,0,0,.5);
 }
-.shuffle-btn--active {
-  border-color: var(--nora-purple);
-  color: var(--nora-purple);
-  background: rgba(176,111,255,.08);
+.shuffle-btn:active {
+  transform: translate(2px,2px);
+  box-shadow: 1px 1px 0 rgba(0,0,0,.5);
 }
 
 .game-grid--shuffling {

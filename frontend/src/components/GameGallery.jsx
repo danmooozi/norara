@@ -20,7 +20,6 @@ function GameGallery({ randomTrigger = 0 }) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [selectedGame, setSelectedGame] = useState(null);
-  const [isShuffled, setIsShuffled] = useState(false);
   const [shuffleAnim, setShuffleAnim] = useState(false);
 
   const fetchGames = async () => {
@@ -35,7 +34,6 @@ function GameGallery({ randomTrigger = 0 }) {
       const data = await res.json();
       setGames(data);
       setDisplayGames(data);
-      setIsShuffled(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -58,11 +56,10 @@ function GameGallery({ randomTrigger = 0 }) {
   const handleShuffle = useCallback(() => {
     setShuffleAnim(true);
     setTimeout(() => {
-      setDisplayGames(isShuffled ? [...games] : shuffle(games));
-      setIsShuffled((v) => !v);
+      setDisplayGames(shuffle(games));
       setShuffleAnim(false);
     }, 200);
-  }, [games, isShuffled]);
+  }, [games]);
 
   return (
     <div>
@@ -81,20 +78,14 @@ function GameGallery({ randomTrigger = 0 }) {
 
       <div className="gallery-header">
         <h2>▶ GAME LIST</h2>
-        <div className="gallery-header-right">
-          {!loading && !error && (
-            <p>{displayGames.length}개의 게임</p>
-          )}
-          {!loading && !error && games.length > 1 && (
-            <button
-              className={`shuffle-btn${isShuffled ? ' shuffle-btn--active' : ''}`}
-              onClick={handleShuffle}
-              title={isShuffled ? '원래 순서로' : '랜덤 섞기'}
-            >
-              🔀 {isShuffled ? '원래대로' : '섞기'}
-            </button>
-          )}
-        </div>
+        {!loading && !error && (
+          <p>{displayGames.length}개의 게임</p>
+        )}
+        {!loading && !error && games.length > 1 && (
+          <button className="shuffle-btn" onClick={handleShuffle} title="랜덤 섞기">
+            SHUFFLE
+          </button>
+        )}
       </div>
 
       {loading && <div className="loading-state">LOADING...</div>}
