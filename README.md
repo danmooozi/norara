@@ -2,34 +2,53 @@
 
 # norara
 
-여러 웹 게임을 한 곳에 모아두고 iframe으로 바로 플레이할 수 있는 게임 갤러리
+웹 게임·사이트를 한 곳에 모아두고 바로 플레이할 수 있는 게임 갤러리
 
 </div>
 
 ---
 
-## Tech Stack
+## 기능
+
+- **게임 갤러리** — 카드 형태로 게임 목록 표시, 카테고리·검색 필터
+- **미리보기** — iframe 인게임 플레이 또는 외부 링크로 이동
+- **PLAY 버튼** — 랜덤 게임 즉시 실행
+- **사이트 추가 요청** — 누구나 갤러리 등록 신청 가능
+- **개발자에게 문의** — 폼 제출 시 Notion 데이터베이스에 자동 저장
+- **관리자 패널** — 게임 CRUD, 사이트 요청 승인/거절/갤러리 등록
+- **커서 펫** — 마우스를 따라다니는 픽셀 아트 오리
+
+---
+
+## 기술 스택
 
 | 영역 | 기술 |
 |------|------|
 | Frontend | React 18, Vite 5, CSS (레트로 픽셀 테마) |
 | Backend | Node.js 24, Express.js 4 |
-| Database | SQLite (`better-sqlite3`) |
-| Ports | Frontend `:3000` · Backend `:5000` |
+| Database | PostgreSQL (Supabase) |
+| 인증 | JWT |
+| 보안 | Helmet.js, express-rate-limit, CORS |
+| 외부 연동 | Notion API |
 
 ---
 
-## 구조
+## 프로젝트 구조
 
 ```
 norara/
+├── .env.example          # 환경변수 예시 (루트에서 통합 관리)
+├── start.sh              # 백엔드 + 프론트엔드 동시 실행
 ├── backend/
 │   ├── middleware/auth.js
 │   ├── routes/
 │   │   ├── auth.js
-│   │   └── games.js
+│   │   ├── games.js
+│   │   ├── siteRequests.js
+│   │   └── contact.js
 │   ├── db.js
-│   └── server.js
+│   ├── server.js
+│   └── seed.js           # 초기 데이터 시딩 (최초 1회)
 └── frontend/
     └── src/
         ├── components/
@@ -40,49 +59,57 @@ norara/
 
 ---
 
-## 실행
+## 로컬 실행
 
-Node.js 24+ 필요합니다.
+**Node.js 24+** 가 필요합니다.
 
-**백엔드**
+### 1. 환경변수 설정
 
-```bash
-cd backend
-npm install
-node server.js
-# → http://localhost:5000
-```
-
-**프론트엔드** (새 터미널)
+루트의 `.env.example`을 복사해 `.env`를 만들고 값을 채워주세요.
 
 ```bash
-cd frontend
-npm install
-npm run dev
-# → http://localhost:3000
+cp .env.example .env
 ```
 
-프론트엔드의 `/api` 요청은 vite 프록시를 통해 `:5000`으로 넘어갑니다.
+```env
+# === Backend ===
+JWT_SECRET=랜덤_시크릿_키
+ADMIN_PASSWORD=관리자_비밀번호
+PORT=5000
+NODE_ENV=development
+ALLOWED_ORIGIN=http://localhost:3000
+DATABASE_URL=postgresql://...
 
----
-
-## 사용법
-
-### 일반 사용자
-
-1. `http://localhost:3000` 접속
-2. 카테고리 필터 또는 검색으로 게임 탐색
-3. 게임 카드 클릭 → iframe 미리보기 또는 외부 링크로 플레이
-
-### 관리자
-
-헤더에 링크가 없고 URL로 직접 접근합니다.
-
-```
-http://localhost:3000/#/secret-admin
+# === Frontend (선택) ===
+NOTION_TOKEN=secret_...
+NOTION_CONTACT_DB_ID=...
 ```
 
-기본 계정: `admin` / `admin1234`
+### 2. 의존성 설치
+
+```bash
+cd backend && npm install
+cd ../frontend && npm install
+```
+
+### 3. 실행
+
+```bash
+# 루트에서 한 번에 실행
+bash start.sh
+```
+
+또는 개별 실행:
+
+```bash
+# 백엔드
+cd backend && node server.js   # → http://localhost:5000
+
+# 프론트엔드 (새 터미널)
+cd frontend && npm run dev     # → http://localhost:3000
+```
+
+프론트엔드의 `/api` 요청은 Vite 프록시를 통해 `:5000`으로 전달됩니다.
 
 ---
 
@@ -90,15 +117,19 @@ http://localhost:3000/#/secret-admin
 
 | Method | Endpoint | 설명 | 인증 |
 |--------|----------|------|------|
-| `GET` | `/api/games` | 게임 목록 (`?search=`, `?category=` 지원) | - |
-| `GET` | `/api/games/:id` | 게임 단건 조회 | - |
-| `POST` | `/api/games` | 게임 등록 | admin |
-| `PUT` | `/api/games/:id` | 게임 수정 | admin |
-| `DELETE` | `/api/games/:id` | 게임 삭제 | admin |
-| `POST` | `/api/auth/login` | 로그인 (JWT 발급) | - |
-| `GET` | `/api/auth/me` | 내 정보 | 로그인 |
-| `GET` | `/api/auth/users` | 유저 목록 | admin |
-| `PATCH` | `/api/auth/users/:id/role` | 권한 변경 | admin |
+| GET | `/api/games` | 게임 목록 (`?search=`, `?category=`) | - |
+| GET | `/api/games/:id` | 게임 단건 조회 | - |
+| POST | `/api/games` | 게임 등록 | 관리자 |
+| PUT | `/api/games/:id` | 게임 수정 | 관리자 |
+| DELETE | `/api/games/:id` | 게임 삭제 | 관리자 |
+| POST | `/api/auth/login` | 로그인 (JWT 발급) | - |
+| GET | `/api/auth/me` | 내 정보 조회 | 로그인 |
+| POST | `/api/site-requests` | 사이트 추가 요청 | - |
+| GET | `/api/site-requests` | 요청 목록 조회 | 관리자 |
+| PATCH | `/api/site-requests/:id/status` | 요청 상태 변경 | 관리자 |
+| POST | `/api/site-requests/:id/register` | 요청 승인 + 갤러리 등록 | 관리자 |
+| DELETE | `/api/site-requests/:id` | 요청 삭제 | 관리자 |
+| POST | `/api/contact` | 문의 제출 → Notion 저장 | - |
 
 ---
 
@@ -110,23 +141,16 @@ http://localhost:3000/#/secret-admin
 
 ## 배포
 
-**환경 변수**
-
 ```bash
-# backend/.env
-JWT_SECRET=your-secret-key-here
-PORT=5000
-```
-
-**서버 배포**
-
-```bash
+# 프론트엔드 빌드
 cd frontend && npm run build
-# dist/ 폴더를 Nginx 등으로 서빙
+# dist/ 를 Nginx 등으로 서빙
 
+# 백엔드 (PM2 권장)
 cd backend && pm2 start server.js --name norara-api
-# Nginx에서 /api → localhost:5000 프록시 설정
 ```
+
+`.env`의 `NODE_ENV=production`, `ALLOWED_ORIGIN`을 실제 도메인으로 설정해야 합니다.
 
 ---
 
@@ -139,12 +163,6 @@ lsof -ti:5000 | xargs kill -9
 lsof -ti:3000 | xargs kill -9
 ```
 
-**DB 초기화**
-
-```bash
-cd backend && rm games.db && node server.js
-```
-
 **프록시 안 될 때**
 
-`frontend/vite.config.js`에서 `/api` target이 `http://localhost:5000`인지 확인.
+`frontend/vite.config.js`의 `/api` target이 `http://localhost:5000`인지 확인.
