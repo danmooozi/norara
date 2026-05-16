@@ -3,7 +3,7 @@ import SearchBar from './SearchBar.jsx';
 import GameCard from './GameCard.jsx';
 import PreviewModal from './PreviewModal.jsx';
 
-function GameGallery() {
+function GameGallery({ randomTrigger = 0 }) {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +35,13 @@ function GameGallery() {
     }, 300);
     return () => clearTimeout(timer);
   }, [search, category]);
+
+  useEffect(() => {
+    if (randomTrigger === 0) return;
+    if (games.length === 0) return;
+    const pick = games[Math.floor(Math.random() * games.length)];
+    setSelectedGame(pick);
+  }, [randomTrigger]);
 
   return (
     <div>

@@ -14,6 +14,7 @@ function AppInner() {
   const [currentView, setCurrentView] = useState('gallery');
   const [showSiteRequest, setShowSiteRequest] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [randomTrigger, setRandomTrigger] = useState(0);
   const { isAdmin, loading, logout } = useAuth();
 
   // URL 해시 기반 라우팅 처리
@@ -70,9 +71,16 @@ function AppInner() {
         currentView={currentView}
         onNavigate={handleNavigate}
         onAdminLogout={handleAdminLogout}
+        onPlayRandom={() => {
+          if (currentView === 'gallery') {
+            setRandomTrigger((n) => n + 1);
+          } else {
+            handleNavigate('gallery');
+          }
+        }}
       />
       <main className="main-content">
-        {currentView === 'gallery' && <GameGallery />}
+        {currentView === 'gallery' && <GameGallery randomTrigger={randomTrigger} />}
         {currentView === 'admin-login' && (
           <AdminLoginPage onLoginSuccess={handleAdminLoginSuccess} />
         )}

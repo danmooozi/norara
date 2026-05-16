@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 
-function Header({ currentView, onNavigate, onAdminLogout }) {
+function Header({ currentView, onNavigate, onAdminLogout, onPlayRandom }) {
   const { isAdmin } = useAuth();
 
   return (
@@ -12,7 +12,7 @@ function Header({ currentView, onNavigate, onAdminLogout }) {
       <nav className="header-nav">
         <button
           className={`nav-btn${currentView === 'gallery' ? ' active' : ''}`}
-          onClick={() => onNavigate('gallery')}
+          onClick={onPlayRandom}
         >
           PLAY
         </button>
