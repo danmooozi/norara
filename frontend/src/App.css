@@ -868,6 +868,26 @@ body::after {
 
 .game-card:hover .game-card-thumbnail { transform: scale(1.04); }
 
+.game-card-placeholder {
+  width: 100%;
+  height: 172px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: filter .3s;
+}
+.game-card:hover .game-card-placeholder { filter: brightness(1.15); }
+.game-card-placeholder-icon { font-size: 2.4rem; line-height: 1; }
+.game-card-placeholder-cat {
+  font-size: 0.75rem;
+  font-family: var(--font-pixel);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
 .game-card-thumbnail-wrap::after {
   content: '';
   position: absolute;

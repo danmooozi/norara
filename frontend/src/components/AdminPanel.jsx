@@ -43,6 +43,7 @@ function AdminPanel() {
   const [toast, setToast] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [thumbPreviewError, setThumbPreviewError] = useState(false);
+  const [fetchingThumbId, setFetchingThumbId] = useState(null);
   const formRef = useRef(null);
 
   // 사이트 신청 관련 상태
@@ -206,6 +207,24 @@ function AdminPanel() {
       fetchGames();
     } catch (err) {
       showToast(`❌ ${err.message}`, 'error');
+    }
+  };
+
+  const handleFetchThumbnail = async (game) => {
+    setFetchingThumbId(game.id);
+    try {
+      const res = await fetch(`/api/games/${game.id}/fetch-thumbnail`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '썸네일 수집 실패');
+      showToast('🖼️ 썸네일이 업데이트되었습니다!');
+      fetchGames();
+    } catch (err) {
+      showToast(`❌ ${err.message}`, 'error');
+    } finally {
+      setFetchingThumbId(null);
     }
   };
 
@@ -591,6 +610,14 @@ function AdminPanel() {
                           )}
                         </div>
                         <div className="admin-game-actions">
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleFetchThumbnail(game)}
+                            disabled={fetchingThumbId === game.id}
+                            title="OG 이미지 자동 수집"
+                          >
+                            {fetchingThumbId === game.id ? '⏳' : '🖼️'}
+                          </button>
                           <button
                             className="btn btn-secondary btn-sm"
                             onClick={() => handleEdit(game)}

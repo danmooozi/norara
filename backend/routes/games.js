@@ -111,4 +111,44 @@ router.delete('/:id', requireAuth, async (req, res) => {
   }
 });
 
+// POST /api/games/:id/fetch-thumbnail  — OG 이미지 자동 수집
+router.post('/:id/fetch-thumbnail', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM games WHERE id = $1', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: '게임을 찾을 수 없습니다.' });
+
+    const game = rows[0];
+    const targetUrl = game.external_url || game.preview_url;
+    if (!targetUrl) return res.status(400).json({ error: 'URL이 없습니다.' });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    let html;
+    try {
+      html = await fetch(targetUrl, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; norara-bot/1.0)' }
+      }).then(r => r.text());
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    const match =
+      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+
+    if (!match?.[1]) return res.status(404).json({ error: 'OG 이미지를 찾을 수 없습니다.' });
+
+    const ogImage = match[1].startsWith('//') ? `https:${match[1]}` : match[1];
+    const { rows: updated } = await pool.query(
+      'UPDATE games SET thumbnail = $1 WHERE id = $2 RETURNING *',
+      [ogImage, req.params.id]
+    );
+    res.json(updated[0]);
+  } catch (err) {
+    console.error('POST /api/games/:id/fetch-thumbnail error:', err);
+    res.status(500).json({ error: '썸네일 수집 중 오류가 발생했습니다.' });
+  }
+});
+
 module.exports = router;
