@@ -15,7 +15,7 @@ function Header({ currentView, onNavigate, onAdminLogout, onPlayRandom }) {
           className={`nav-btn${currentView === 'gallery' ? ' active' : ''}`}
           onClick={onPlayRandom}
         >
-          PLAY
+          ▶ PLAY
         </button>
         {isAdmin && (
           <>

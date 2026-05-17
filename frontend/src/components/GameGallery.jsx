@@ -12,9 +12,19 @@ function shuffle(arr) {
   return a;
 }
 
+// featured 카드를 2번째(index 1)에 두어 4열 그리드에서 항상 가운데(col 2-3) 위치
+function arrangeWithFeatured(allGames, featuredId) {
+  if (!featuredId || allGames.length === 0) return allGames;
+  const featured = allGames.find(g => g.id === featuredId);
+  if (!featured) return allGames;
+  const others = allGames.filter(g => g.id !== featuredId);
+  return [others[0], featured, ...others.slice(1)].filter(Boolean);
+}
+
 function GameGallery({ randomTrigger = 0 }) {
   const [games, setGames] = useState([]);
   const [displayGames, setDisplayGames] = useState([]);
+  const [featuredId, setFeaturedId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
@@ -33,7 +43,12 @@ function GameGallery({ randomTrigger = 0 }) {
       if (!res.ok) throw new Error('Failed to fetch games');
       const data = await res.json();
       setGames(data);
-      setDisplayGames(data);
+
+      const dbFeatured = data.find(g => g.featured);
+      const featured = dbFeatured ?? data[Math.floor(Math.random() * data.length)];
+      const fid = featured?.id ?? null;
+      setFeaturedId(fid);
+      setDisplayGames(arrangeWithFeatured(data, fid));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -56,7 +71,10 @@ function GameGallery({ randomTrigger = 0 }) {
   const handleShuffle = useCallback(() => {
     setShuffleAnim(true);
     setTimeout(() => {
-      setDisplayGames(shuffle(games));
+      const shuffled = shuffle(games);
+      const fid = shuffled[Math.floor(Math.random() * shuffled.length)]?.id ?? null;
+      setFeaturedId(fid);
+      setDisplayGames(arrangeWithFeatured(shuffled, fid));
       setShuffleAnim(false);
     }, 200);
   }, [games]);
@@ -92,17 +110,19 @@ function GameGallery({ randomTrigger = 0 }) {
       {error && <div className="error-state">⚠ {error}</div>}
 
       {!loading && !error && (
-        <div className={`game-grid${shuffleAnim ? ' game-grid--shuffling' : ''}`}>
+        <div className={`game-grid bento-grid${shuffleAnim ? ' game-grid--shuffling' : ''}`}>
           {displayGames.length === 0 ? (
             <div className="empty-state">
               <span>🕹️</span>
               <p>게임이 없어요. 검색어나 카테고리를 바꿔보세요!</p>
             </div>
           ) : (
-            displayGames.map((game) => (
+            displayGames.map((game, i) => (
               <GameCard
                 key={game.id}
                 game={game}
+                index={i}
+                isFeatured={game.id === featuredId}
                 onPreview={setSelectedGame}
               />
             ))

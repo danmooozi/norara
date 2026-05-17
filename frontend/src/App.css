@@ -84,6 +84,18 @@
   --nora-green:   #44ff88;
   --nora-text:    #f0eaff;
   --nora-muted:   #7a7098;
+
+  /* Bento 추가 토큰 */
+  --bg:        #16132B;
+  --card:      #211C44;
+  --card-2:    #2A2454;
+  --yellow:    #FFD230;
+  --orange:    #FFA831;
+  --cyan:      #5EE9D6;
+  --magenta:   #FF5C8A;
+  --pink-soft: #FF8FD7;
+  --purple:    #B891FF;
+  --text-dim:  #7B74A8;
 }
 
 *, *::before, *::after {
@@ -598,8 +610,8 @@ body::after {
   color: var(--nora-text);
   font-size: .9rem;
   font-family: 'Noto Sans KR', sans-serif;
-  box-shadow: inset 2px 2px 0 rgba(0,0,0,.3);
-  transition: border-color .15s;
+  box-shadow: 3px 3px 0 var(--nora-border);
+  transition: border-color .12s, box-shadow .12s;
 }
 
 .search-input::placeholder { color: var(--nora-muted); }
@@ -607,7 +619,7 @@ body::after {
 .search-input:focus {
   outline: none;
   border-color: var(--nora-cyan);
-  box-shadow: inset 2px 2px 0 rgba(0,0,0,.3), 0 0 0 2px rgba(61,255,216,.1);
+  box-shadow: 3px 3px 0 var(--nora-cyan);
 }
 
 .category-select {
@@ -621,14 +633,16 @@ body::after {
   font-family: 'Noto Sans KR', sans-serif;
   cursor: pointer;
   min-width: 150px;
-  box-shadow: inset 2px 2px 0 rgba(0,0,0,.3);
+  box-shadow: 3px 3px 0 var(--nora-border);
   appearance: none;
   -webkit-appearance: none;
+  transition: border-color .12s, box-shadow .12s;
 }
 
 .category-select:focus {
   outline: none;
   border-color: var(--nora-yellow);
+  box-shadow: 3px 3px 0 var(--nora-yellow);
 }
 
 /* ── Gallery Header ── */
@@ -872,12 +886,16 @@ body::after {
 }
 .submit-confirm-btn:disabled { opacity: .6; cursor: not-allowed; }
 
-/* ── Game Grid ── */
-.game-grid {
+/* ── Bento Grid ── */
+.bento-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 220px;
+  gap: 22px;
+  grid-auto-flow: dense;
+  transition: grid-template-columns .3s;
 }
+
 
 .empty-state {
   grid-column: 1 / -1;
@@ -899,112 +917,314 @@ body::after {
   line-height: 2.2;
 }
 
-/* ── Game Card ── */
-.game-card {
-  background: var(--nora-surface);
+/* ── Bento Wrap (그리드 아이템, 회전, 클릭) ── */
+.bento-wrap {
+  position: relative;       /* 테이프 기준점 */
+  overflow: visible;        /* 테이프가 카드 위로 겹치도록 */
+  cursor: pointer;
+  transform: rotate(var(--card-rot, 0deg));
+  transition: transform .18s cubic-bezier(.22,1,.36,1), z-index 0s;
+  height: 100%;
+}
+
+.bento-wrap:hover {
+  transform: rotate(0deg) translate(-2px, -2px);
+  z-index: 2;
+}
+
+.bento-wrap--featured {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+/* ── Bento Card (시각적 박스, 콘텐츠 클리핑) ── */
+.bento-card {
+  background: var(--card, #211C44);
   border: 3px solid var(--nora-border);
   box-shadow: 5px 5px 0 rgba(0,0,0,.55);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden;         /* 콘텐츠 클리핑 */
+  height: 100%;
+  transition: box-shadow .18s, border-color .15s;
+}
+
+.bento-wrap:hover .bento-card {
+  box-shadow: 8px 8px 0 rgba(0,0,0,.6);
+  border-color: var(--yellow, #FFD230);
+}
+
+/* 마스킹 테이프 */
+.bento-tape {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  width: 64px;
+  height: 18px;
+  background: rgba(255, 210, 48, 0.82);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* 썸네일 */
+.bento-thumb-wrap {
   position: relative;
-  transition: transform .1s, box-shadow .1s, border-color .12s;
-}
-
-.game-card:hover {
-  transform: translate(-3px,-3px);
-  box-shadow: 8px 8px 0 rgba(0,0,0,.55);
-  border-color: var(--nora-yellow);
-}
-
-.game-card-thumbnail-wrap {
-  position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
-.game-card-thumbnail {
+.bento-wrap:not(.bento-wrap--featured) .bento-thumb-wrap {
+  height: 90px;
+}
+
+.bento-wrap--featured .bento-thumb-wrap {
+  height: 240px;
+}
+
+.bento-thumb {
   width: 100%;
-  height: 172px;
+  height: 100%;
   object-fit: cover;
-  background: var(--nora-surf2);
   display: block;
   transition: transform .3s;
 }
 
-.game-card:hover .game-card-thumbnail { transform: scale(1.04); }
+.bento-card:hover .bento-thumb { transform: scale(1.04); }
 
-.game-card-placeholder {
+.bento-thumb-placeholder {
   width: 100%;
-  height: 172px;
+  height: 100%;
+  background: var(--card-2, #2A2454);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: filter .3s;
-}
-.game-card:hover .game-card-placeholder { filter: brightness(1.15); }
-.game-card-placeholder-icon { font-size: 2.4rem; line-height: 1; }
-.game-card-placeholder-cat {
-  font-size: 0.75rem;
-  font-family: var(--font-pixel);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  opacity: 0.85;
 }
 
-.game-card-thumbnail-wrap::after {
+.bento-placeholder-icon { font-size: 2.2rem; opacity: .5; }
+
+.bento-thumb-wrap::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(to bottom, transparent 50%, rgba(14,12,26,.82) 100%);
+  background: linear-gradient(to bottom, transparent 40%, rgba(14,12,26,.75) 100%);
 }
 
-.game-card-body {
-  padding: 13px 15px 15px;
+/* Flag 스티커 */
+.bento-flag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: .46rem;
+  padding: 4px 8px;
+  letter-spacing: .06em;
+  z-index: 4;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.4);
+  line-height: 1;
+}
+
+.bento-flag--new {
+  background: var(--yellow, #FFD230);
+  color: #1a1000;
+  transform: rotate(-6deg);
+}
+
+.bento-flag--pick {
+  background: var(--magenta, #FF5C8A);
+  color: #fff;
+  transform: rotate(6deg);
+}
+
+/* 카드 바디 */
+.bento-body {
+  padding: 10px 12px 12px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 5px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bento-wrap--featured .bento-body {
+  padding: 12px 16px 14px;
   gap: 7px;
 }
 
-.game-card-category {
-  font-family: 'Press Start 2P', monospace;
-  font-size: .5rem;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--nora-bg);
-  background: var(--nora-cyan);
-  display: inline-block;
-  padding: 3px 7px;
-  width: fit-content;
-  box-shadow: 2px 2px 0 rgba(0,0,0,.4);
+/* 카테고리 배지 행 */
+.bento-cat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-.game-card-title {
-  font-size: .96rem;
+.bento-cat-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .44rem;
+  padding: 2px 6px;
+  border: 1.5px solid;
+  letter-spacing: .05em;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+.bento-tagline {
+  font-size: .7rem;
+  color: var(--text-dim, #7B74A8);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 타이틀 */
+.bento-title {
+  font-size: .95rem;
   font-weight: 900;
   color: var(--nora-text);
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.game-card-desc {
-  font-size: .81rem;
+.bento-wrap--featured .bento-title {
+  font-size: 1.15rem;
+  white-space: normal;
+}
+
+/* 설명 */
+.bento-desc {
+  font-size: .8rem;
   color: var(--nora-muted);
   line-height: 1.6;
-  flex: 1;
+  max-height: 4.8em;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.game-card-actions {
+/* 메타 행 */
+.bento-meta {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: auto;
 }
+
+.bento-meta-date {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .46rem;
+  color: var(--text-dim, #7B74A8);
+  letter-spacing: .04em;
+}
+
+.bento-meta-dot {
+  font-size: .6rem;
+  color: var(--text-dim, #7B74A8);
+  opacity: .5;
+}
+
+.bento-meta-plays {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .46rem;
+  color: var(--cyan, #5EE9D6);
+  letter-spacing: .04em;
+}
+
+.bento-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .38rem;
+  padding: 1px 5px;
+  border: 1.5px solid;
+  letter-spacing: .04em;
+  line-height: 1.6;
+}
+
+.bento-badge--mine {
+  color: var(--cyan, #5EE9D6);
+  border-color: var(--cyan, #5EE9D6);
+}
+
+.bento-badge--ext {
+  color: var(--text-dim, #7B74A8);
+  border-color: var(--text-dim, #7B74A8);
+}
+
+/* 소형 카드 body: 패딩·간격 압축 */
+.bento-wrap:not(.bento-wrap--featured) .bento-body {
+  padding: 8px 12px 10px;
+  gap: 3px;
+}
+
+/* 소형 카드 desc: 2줄 클램프 */
+.bento-wrap:not(.bento-wrap--featured) .bento-desc {
+  -webkit-line-clamp: 2;
+  font-size: .75rem;
+  line-height: 1.45;
+  max-height: 2.9em;
+}
+
+/* 소형 카드 버튼: 더 작게 + 하단 고정 */
+.bento-wrap:not(.bento-wrap--featured) .bento-actions {
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+.bento-wrap:not(.bento-wrap--featured) .bento-btn {
+  font-size: .42rem;
+  padding: 4px 8px;
+}
+
+.bento-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.bento-wrap--featured .bento-actions {
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.bento-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .48rem;
+  padding: 6px 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  letter-spacing: .03em;
+  transition: transform .08s, box-shadow .08s;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.5);
+  flex-shrink: 0;
+}
+
+.bento-btn:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 rgba(0,0,0,.5); }
+.bento-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(0,0,0,.5); }
+
+.bento-btn--play {
+  background: var(--yellow, #FFD230);
+  border-color: var(--orange, #FFA831);
+  color: #1a1000;
+  box-shadow: 2px 2px 0 var(--orange, #FFA831);
+}
+
+.bento-btn--site {
+  background: var(--card-2, #2A2454);
+  border-color: var(--nora-border);
+  color: var(--purple, #B891FF);
+}
+.bento-btn--site:hover { border-color: var(--purple, #B891FF); }
 
 /* ── Buttons ── */
 .btn {
@@ -1150,7 +1370,18 @@ body::after {
   gap: 12px;
   flex-wrap: wrap;
 }
-.modal-footer p { font-size: .8rem; color: var(--nora-muted); flex: 1; }
+.modal-footer p {
+  font-size: .8rem;
+  line-height: 1.5;
+  max-height: 3em;
+  color: var(--nora-muted);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
 
 /* ── Admin Panel ── */
 .admin-panel {
@@ -2025,6 +2256,18 @@ body::after {
 @media (max-width: 900px) {
   .admin-panel { grid-template-columns: 1fr; }
   .gallery-hero-title { font-size: 1.5rem; }
+
+  /* Bento: 4열 → 2열 */
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 240px;
+    gap: 16px;
+  }
+  .bento-wrap--featured {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .bento-wrap--featured .bento-thumb-wrap { height: 220px; }
 }
 
 @media (max-width: 620px) {
@@ -2052,6 +2295,7 @@ body::after {
 
   /* 게임 그리드: 2열 */
   .game-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .bento-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; grid-auto-rows: 220px; }
 
   /* 모달 */
   .modal-iframe { height: 320px; }
@@ -2064,5 +2308,9 @@ body::after {
 
 @media (max-width: 380px) {
   .game-grid { grid-template-columns: 1fr; }
+  .bento-grid { grid-template-columns: 1fr; grid-auto-rows: 260px; }
+  .bento-wrap--featured { grid-column: span 1; grid-row: span 1; }
+  /* 1×1로 줄어든 featured 카드 썸네일을 소형 카드와 동일하게 리셋 */
+  .bento-wrap--featured .bento-thumb-wrap { height: 90px; }
   .gallery-hero-title { font-size: .95rem; }
 }

@@ -1,11 +1,8 @@
 const CATEGORIES = [
-  { value: 'All',    label: '📂 전체' },
-  { value: '액션',   label: '⚔️ 액션' },
-  { value: '퍼즐',   label: '🧩 퍼즐' },
-  { value: 'RPG',    label: '🗡️ RPG' },
-  { value: '스포츠', label: '⚽ 스포츠' },
-  { value: '파티',   label: '🎲 파티' },
-  { value: '기타',   label: '📦 기타' },
+  { value: 'All',  label: '📂 전체' },
+  { value: '게임', label: '🎮 게임' },
+  { value: '도구', label: '🔧 도구' },
+  { value: '실험', label: '🧪 실험' },
 ];
 
 function SearchBar({ search, category, onSearchChange, onCategoryChange }) {

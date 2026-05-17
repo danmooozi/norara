@@ -50,14 +50,15 @@ router.get('/:id', async (req, res) => {
 // POST /api/games
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { title, description, category, thumbnail, preview_url, external_url } = req.body;
+    const { title, description, category, thumbnail, preview_url, external_url, featured, flag, is_mine, play_count } = req.body;
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
     }
     const { rows } = await pool.query(
-      `INSERT INTO games (title, description, category, thumbnail, preview_url, external_url)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [title, description || '', category || '기타', thumbnail || '', preview_url || '', external_url || '']
+      `INSERT INTO games (title, description, category, thumbnail, preview_url, external_url, featured, flag, is_mine, play_count)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [title, description || '', category || '게임', thumbnail || '', preview_url || '', external_url || '',
+       featured || false, flag || null, is_mine || false, play_count || 0]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -74,18 +75,23 @@ router.put('/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Game not found' });
     }
     const e = existing[0];
-    const { title, description, category, thumbnail, preview_url, external_url } = req.body;
+    const { title, description, category, thumbnail, preview_url, external_url, featured, flag, is_mine, play_count } = req.body;
     const { rows } = await pool.query(
       `UPDATE games
-       SET title=$1, description=$2, category=$3, thumbnail=$4, preview_url=$5, external_url=$6
-       WHERE id=$7 RETURNING *`,
+       SET title=$1, description=$2, category=$3, thumbnail=$4, preview_url=$5, external_url=$6,
+           featured=$7, flag=$8, is_mine=$9, play_count=$10
+       WHERE id=$11 RETURNING *`,
       [
-        title !== undefined ? title : e.title,
+        title       !== undefined ? title       : e.title,
         description !== undefined ? description : e.description,
-        category !== undefined ? category : e.category,
-        thumbnail !== undefined ? thumbnail : e.thumbnail,
+        category    !== undefined ? category    : e.category,
+        thumbnail   !== undefined ? thumbnail   : e.thumbnail,
         preview_url !== undefined ? preview_url : e.preview_url,
-        external_url !== undefined ? external_url : e.external_url,
+        external_url!== undefined ? external_url: e.external_url,
+        featured    !== undefined ? featured    : (e.featured    ?? false),
+        flag        !== undefined ? flag        : (e.flag        ?? null),
+        is_mine     !== undefined ? is_mine     : (e.is_mine     ?? false),
+        play_count  !== undefined ? play_count  : (e.play_count  ?? 0),
         req.params.id
       ]
     );
@@ -148,6 +154,44 @@ router.post('/:id/fetch-thumbnail', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('POST /api/games/:id/fetch-thumbnail error:', err);
     res.status(500).json({ error: '썸네일 수집 중 오류가 발생했습니다.' });
+  }
+});
+
+// POST /api/games/:id/check-iframe  — X-Frame-Options 차단 여부 확인
+router.post('/:id/check-iframe', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM games WHERE id = $1', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: '게임을 찾을 수 없습니다.' });
+
+    const game = rows[0];
+    const targetUrl = game.preview_url || game.external_url;
+    if (!targetUrl) return res.status(400).json({ error: 'URL이 없습니다.' });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    let blocked = false;
+    try {
+      const response = await fetch(targetUrl, {
+        method: 'HEAD',
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; norara-bot/1.0)' }
+      });
+      const xfo = response.headers.get('x-frame-options');
+      const csp = response.headers.get('content-security-policy');
+      if (xfo && /deny|sameorigin/i.test(xfo)) blocked = true;
+      if (!blocked && csp && /frame-ancestors\s+['"]?none['"]?/i.test(csp)) blocked = true;
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    const { rows: updated } = await pool.query(
+      'UPDATE games SET iframe_blocked = $1 WHERE id = $2 RETURNING *',
+      [blocked, req.params.id]
+    );
+    res.json({ iframe_blocked: blocked, game: updated[0] });
+  } catch (err) {
+    console.error('POST /api/games/:id/check-iframe error:', err);
+    res.status(500).json({ error: 'iframe 체크 중 오류가 발생했습니다.' });
   }
 });
 

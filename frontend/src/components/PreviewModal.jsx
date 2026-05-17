@@ -15,7 +15,7 @@ function PreviewModal({ game, onClose }) {
         </div>
 
         <div className="modal-iframe-container">
-          {game.preview_url ? (
+          {game.preview_url && !game.iframe_blocked ? (
             <iframe
               className="modal-iframe"
               src={game.preview_url}
@@ -25,8 +25,11 @@ function PreviewModal({ game, onClose }) {
             />
           ) : (
             <div className="modal-no-preview">
-              <span>🚫</span>
-              <p>미리보기를 지원하지 않는 게임입니다.</p>
+              <span>{game.iframe_blocked ? '🔒' : '🚫'}</span>
+              <p>{game.iframe_blocked
+                ? '이 게임은 외부 삽입을 허용하지 않아요.'
+                : '미리보기를 지원하지 않는 게임입니다.'
+              }</p>
             </div>
           )}
         </div>

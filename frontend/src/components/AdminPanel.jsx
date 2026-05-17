@@ -3,15 +3,20 @@ import { useAuth } from '../context/AuthContext';
 import UserManager from './UserManager';
 import SiteRegisterModal from './SiteRegisterModal';
 
-const CATEGORIES = ['액션', '퍼즐', 'RPG', '스포츠', '파티', '기타'];
+const CATEGORIES = ['게임', '도구', '실험'];
+const FLAGS = ['', 'NEW', 'PICK'];
 
 const EMPTY_FORM = {
   title: '',
   description: '',
-  category: '액션',
+  category: '게임',
   thumbnail: '',
   preview_url: '',
-  external_url: ''
+  external_url: '',
+  featured: false,
+  flag: '',
+  is_mine: false,
+  play_count: 0,
 };
 
 function validate(form) {
@@ -44,6 +49,7 @@ function AdminPanel() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [thumbPreviewError, setThumbPreviewError] = useState(false);
   const [fetchingThumbId, setFetchingThumbId] = useState(null);
+  const [checkingIframeId, setCheckingIframeId] = useState(null);
   const formRef = useRef(null);
 
   // 사이트 신청 관련 상태
@@ -130,10 +136,11 @@ function AdminPanel() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const coerced = name === 'play_count' ? (parseInt(value, 10) || 0) : value;
+    setForm((prev) => ({ ...prev, [name]: coerced }));
     if (name === 'thumbnail') setThumbPreviewError(false);
     if (touched[name]) {
-      const newErrors = validate({ ...form, [name]: value });
+      const newErrors = validate({ ...form, [name]: coerced });
       setErrors((prev) => ({ ...prev, [name]: newErrors[name] }));
     }
   };
@@ -184,10 +191,14 @@ function AdminPanel() {
     setForm({
       title: game.title || '',
       description: game.description || '',
-      category: game.category || '액션',
+      category: game.category || '게임',
       thumbnail: game.thumbnail || '',
       preview_url: game.preview_url || '',
-      external_url: game.external_url || ''
+      external_url: game.external_url || '',
+      featured: game.featured || false,
+      flag: game.flag || '',
+      is_mine: game.is_mine || false,
+      play_count: game.play_count || 0,
     });
     setTouched({});
     setErrors({});
@@ -225,6 +236,24 @@ function AdminPanel() {
       showToast(`❌ ${err.message}`, 'error');
     } finally {
       setFetchingThumbId(null);
+    }
+  };
+
+  const handleCheckIframe = async (game) => {
+    setCheckingIframeId(game.id);
+    try {
+      const res = await fetch(`/api/games/${game.id}/check-iframe`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'iframe 체크 실패');
+      showToast(data.iframe_blocked ? '🔒 iframe 차단됨' : '✅ iframe 허용됨');
+      fetchGames();
+    } catch (err) {
+      showToast(`❌ ${err.message}`, 'error');
+    } finally {
+      setCheckingIframeId(null);
     }
   };
 
@@ -531,6 +560,63 @@ function AdminPanel() {
                   )}
                 </div>
 
+                {/* Bento 메타 필드 */}
+                <div className="submit-form-row">
+                  <div className="form-group">
+                    <label htmlFor="f-flag">FLAG 스티커</label>
+                    <select
+                      id="f-flag"
+                      name="flag"
+                      value={form.flag}
+                      onChange={handleChange}
+                    >
+                      {FLAGS.map((f) => (
+                        <option key={f} value={f}>{f || '없음'}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="f-play_count">플레이 수</label>
+                    <input
+                      id="f-play_count"
+                      type="number"
+                      name="play_count"
+                      min="0"
+                      value={form.play_count}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="submit-form-row">
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 8 }}>
+                    <input
+                      id="f-featured"
+                      type="checkbox"
+                      name="featured"
+                      checked={!!form.featured}
+                      onChange={(e) => setForm((p) => ({ ...p, featured: e.target.checked }))}
+                      style={{ width: 18, height: 18, cursor: 'pointer' }}
+                    />
+                    <label htmlFor="f-featured" style={{ marginBottom: 0, cursor: 'pointer' }}>
+                      ⭐ FEATURED (2×2 대형 카드)
+                    </label>
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 8 }}>
+                    <input
+                      id="f-is_mine"
+                      type="checkbox"
+                      name="is_mine"
+                      checked={!!form.is_mine}
+                      onChange={(e) => setForm((p) => ({ ...p, is_mine: e.target.checked }))}
+                      style={{ width: 18, height: 18, cursor: 'pointer' }}
+                    />
+                    <label htmlFor="f-is_mine" style={{ marginBottom: 0, cursor: 'pointer' }}>
+                      🏠 MINE (내 앱 배지)
+                    </label>
+                  </div>
+                </div>
+
                 <div className="form-actions">
                   <button
                     type="submit"
@@ -617,6 +703,14 @@ function AdminPanel() {
                             title="OG 이미지 자동 수집"
                           >
                             {fetchingThumbId === game.id ? '⏳' : '🖼️'}
+                          </button>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleCheckIframe(game)}
+                            disabled={checkingIframeId === game.id}
+                            title={`iframe 차단 체크 (현재: ${game.iframe_blocked === true ? '차단' : game.iframe_blocked === false ? '허용' : '미확인'})`}
+                          >
+                            {checkingIframeId === game.id ? '⏳' : game.iframe_blocked === true ? '🔒' : game.iframe_blocked === false ? '✅' : '🔍'}
                           </button>
                           <button
                             className="btn btn-secondary btn-sm"

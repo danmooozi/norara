@@ -1,69 +1,91 @@
 import { useState } from 'react';
 
-const CATEGORY_STYLE = {
-  '액션': { bg: '#3d1a1a', color: '#ff6b6b', icon: '⚔️' },
-  '퍼즐': { bg: '#1a2a3d', color: '#6bb5ff', icon: '🧩' },
-  'RPG':  { bg: '#2a1a3d', color: '#c06bff', icon: '🗡️' },
-  '스포츠': { bg: '#1a3d1a', color: '#6bff8e', icon: '⚽' },
-  '파티': { bg: '#3d2e1a', color: '#ffd06b', icon: '🎲' },
-  '기타': { bg: '#2a2a2a', color: '#aaaaaa', icon: '🎮' },
+const CAT_STYLE = {
+  '게임': { color: '#5EE9D6', label: '게임' },
+  '도구': { color: '#B891FF', label: '도구' },
+  '실험': { color: '#FF8FD7', label: '실험' },
 };
 
-function GameCard({ game, onPreview }) {
+const ROTATIONS = [-1.0, 0.7, -0.4, 1.1, -0.6, 0.5, -0.9, 0.6, -0.3, 0.4];
+
+function GameCard({ game, index = 0, isFeatured = false, onPreview }) {
   const [imgError, setImgError] = useState(false);
-  const style = CATEGORY_STYLE[game.category] || CATEGORY_STYLE['기타'];
+  const cat = CAT_STYLE[game.category] || CAT_STYLE['게임'];
   const showPlaceholder = !game.thumbnail || imgError;
+  const rot = ROTATIONS[index % ROTATIONS.length];
 
   return (
-    <div className="game-card">
-      <div className="game-card-thumbnail-wrap">
-        {showPlaceholder ? (
-          <div
-            className="game-card-placeholder"
-            style={{ background: style.bg }}
-          >
-            <span className="game-card-placeholder-icon">{style.icon}</span>
-            <span className="game-card-placeholder-cat" style={{ color: style.color }}>
-              {game.category || '기타'}
+    // bento-wrap: 그리드 span + 회전 + 클릭 — overflow: visible 유지 (테이프용)
+    <div
+      className={`bento-wrap${isFeatured ? ' bento-wrap--featured' : ''}`}
+      style={{ '--card-rot': `${rot}deg` }}
+      onClick={() => onPreview(game)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && onPreview(game)}
+    >
+      {/* 테이프: wrap 기준으로 카드 위에 겹침 */}
+      <div className="bento-tape" />
+
+      {/* bento-card: 시각적 박스 + overflow: hidden으로 내부 클리핑 */}
+      <div className="bento-card">
+        {/* 썸네일 */}
+        <div className="bento-thumb-wrap">
+          {showPlaceholder ? (
+            <div className="bento-thumb-placeholder">
+              <span className="bento-placeholder-icon">🎮</span>
+            </div>
+          ) : (
+            <img
+              className="bento-thumb"
+              src={game.thumbnail}
+              alt={game.title}
+              onError={() => setImgError(true)}
+            />
+          )}
+
+          {/* NEW / PICK 깃발 */}
+          {game.flag && (
+            <div className={`bento-flag bento-flag--${game.flag.toLowerCase()}`}>
+              {game.flag}
+            </div>
+          )}
+        </div>
+
+        {/* 카드 바디 */}
+        <div className="bento-body">
+          <div className="bento-cat-row">
+            <span className="bento-cat-badge" style={{ color: cat.color, borderColor: cat.color }}>
+              {cat.label}
             </span>
           </div>
-        ) : (
-          <img
-            className="game-card-thumbnail"
-            src={game.thumbnail}
-            alt={game.title}
-            onError={() => setImgError(true)}
-          />
-        )}
-      </div>
-      <div className="game-card-body">
-        <span className="game-card-category">
-          {({
-            '액션': '⚔️', '퍼즐': '🧩', 'RPG': '🗡️',
-            '스포츠': '⚽', '파티': '🎲', '기타': '📦'
-          })[game.category] || '🎮'} {game.category || '기타'}
-        </span>
-        <div className="game-card-title">{game.title}</div>
-        <p className="game-card-desc">{game.description || 'No description available.'}</p>
-        <div className="game-card-actions">
-          {game.preview_url && (
-            <button
-              className="btn btn-primary"
-              onClick={() => onPreview(game)}
-            >
-              PLAY
-            </button>
+
+          <div className="bento-title">{game.title}</div>
+
+          {game.description && (
+            <p className="bento-desc">{game.description}</p>
           )}
-          {game.external_url && (
-            <a
-              className="btn btn-secondary"
-              href={game.external_url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GO SITE
-            </a>
-          )}
+
+          <div className="bento-actions" onClick={(e) => e.stopPropagation()}>
+            {game.preview_url && (
+              <button
+                className="bento-btn bento-btn--play"
+                onClick={() => onPreview(game)}
+              >
+                ▶ PLAY
+              </button>
+            )}
+            {game.external_url && (
+              <a
+                className="bento-btn bento-btn--site"
+                href={game.external_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GO SITE
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>
