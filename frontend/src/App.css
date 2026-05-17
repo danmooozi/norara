@@ -130,6 +130,7 @@ body::after {
   background: var(--nora-surface);
   border-bottom: 4px solid var(--nora-yellow);
   box-shadow: 0 4px 0 rgba(255,225,86,.15), 0 6px 24px rgba(0,0,0,.5);
+  padding-top: env(safe-area-inset-top);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -143,7 +144,7 @@ body::after {
   right: 0;
   height: env(safe-area-inset-top);
   background: var(--nora-surface);
-  z-index: 100;
+  z-index: 99;
 }
 
 .header-inner {
