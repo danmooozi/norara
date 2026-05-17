@@ -39,6 +39,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Backend API server running on http://0.0.0.0:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Backend API server running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+module.exports = app;
